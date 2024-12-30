@@ -20,7 +20,7 @@ def speak(text):
     engine.runAndWait()
 
 def aiProcess(command):
-    client=OpenAI(api_key="your api")
+    client=OpenAI(api_key="OPEN_API_KEY")
     # Create the chat completion request
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -46,7 +46,7 @@ def processCommand(c):
         link = musicLibrary.music[song]
         webbrowser.open(link)
     elif "news" in c.lower():
-        r=requests.get(f"https://newsapi.org/v2/top-headlines?country=us&apiKey={newsapi}")
+        r=requests.get(f"newsapi={newsapi}")
         if r.status_code == 200:
             # Parse the JSON response
             data = r.json()
