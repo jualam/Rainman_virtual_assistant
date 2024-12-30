@@ -1,6 +1,6 @@
 #pip install openai
 from openai import OpenAI
-client=OpenAI(api_key="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")
+client=OpenAI(api_key="your api")
 # Create the chat completion request
 completion = client.chat.completions.create(
     model="gpt-4o-mini",
