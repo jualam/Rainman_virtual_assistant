@@ -4,6 +4,8 @@
 #pip install webbrowser
 #pip install pocketsphinx
 #pip install openai
+#pip install gTTS
+#pip install pygame(to play the mp3)
 
 import speech_recognition as sr
 import webbrowser
@@ -11,21 +13,46 @@ import pyttsx3
 import musicLibrary
 import requests
 from openai import OpenAI
+from gtts import gTTS
+import pygame
+import os
 
 engine = pyttsx3.init()
-newsapi="your api"
+newsapi="NEWS_API"
 
-def speak(text):
+#using pyttsx3
+def speak_old(text):
     engine.say(text)
     engine.runAndWait()
 
+#using gTTS
+def speak_new(text):
+    tts = gTTS(text)
+    tts.save('temp.mp3') 
+
+    # Initialize Pygame mixer
+    pygame.mixer.init()
+
+    # Load the MP3 file
+    pygame.mixer.music.load('temp.mp3')
+
+    # Play the MP3 file
+    pygame.mixer.music.play()
+
+    # Keep the program running until the music stops playing
+    while pygame.mixer.music.get_busy():
+        pygame.time.Clock().tick(10)
+    
+    pygame.mixer.music.unload()
+    os.remove("temp.mp3") 
+
 def aiProcess(command):
-    client=OpenAI(api_key="OPEN_API_KEY")
+    client=OpenAI(api_key="OPEN_AI_API")
     # Create the chat completion request
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a hvirtual assitant named Jarvis skilled in regular question answering tasks for everyday works"},
+            {"role": "system", "content": "You are a virtual assitant named RainMan skilled in regular question answering tasks for everyday works. Please give short responses maximum 100 words"},
             {"role": "user", "content": command}
         ]
     )
@@ -46,7 +73,7 @@ def processCommand(c):
         link = musicLibrary.music[song]
         webbrowser.open(link)
     elif "news" in c.lower():
-        r=requests.get(f"newsapi={newsapi}")
+        r=requests.get(f"https://newsapi.org/v2/top-headlines?country=us&apiKey={newsapi}")
         if r.status_code == 200:
             # Parse the JSON response
             data = r.json()
@@ -56,15 +83,15 @@ def processCommand(c):
             
             # Print the headlines
             for article in articles:
-                speak(article['title'])
+                speak_old(article['title'])
     else:
         output= aiProcess(c)
-        speak(output)
+        speak_old(output)
         
 if __name__ == "__main__":
-    speak("Initializing Jarvis....")
+    speak_old("Initializing Rainman....")
     while True:
-        # Listen for the wake word "Jarvis"
+        # Listen for the wake word "Rainman"
         # obtain audio from the microphone
         r = sr.Recognizer()
          
@@ -72,16 +99,16 @@ if __name__ == "__main__":
         try:
             with sr.Microphone() as source:
                 print("Listening...")
-                audio = r.listen(source, timeout=2, phrase_time_limit=1)
+                audio = r.listen(source, timeout=5, phrase_time_limit=3)
             word = r.recognize_google(audio)
-            if(word.lower() == "jarvis"):
-                speak("Ya")
+            print(f"Heard: {word}") #debugging step
+            if word.replace(" ", "").lower() == "rainman":
+                speak_old("Yeah")
                 # Listen for command
                 with sr.Microphone() as source:
-                    print("Jarvis Active...")
+                    print("RainMan Active...")
                     audio = r.listen(source)
                     command = r.recognize_google(audio)
-
                     processCommand(command)
             elif(word.lower()=="stop"):
                 break
